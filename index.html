@@ -59,19 +59,34 @@
     let declinedResults = [];
     let unknownResults = [];
 
+    // Reset semua status dan hasil pengecekan
+    function resetResults() {
+      approvedResults = [];
+      declinedResults = [];
+      unknownResults = [];
+      
+      // Reset tombol filter
+      document.getElementById('approved-button').innerText = `Approved: 0 ✅`;
+      document.getElementById('declined-button').innerText = `Declined: 0 ❌`;
+      document.getElementById('unknown-button').innerText = `Unknown: 0 ⚠️`;
+
+      // Clear table body
+      const resultsTableBody = document.getElementById('results-table-body');
+      resultsTableBody.innerHTML = "";
+      resultsTableBody.style.display = "none";  // Sembunyikan tabel hasil
+    }
+
     async function checkCC() {
       const ccInput = document.getElementById('cc-input').value;
       const ccList = ccInput.split(/\s*,\s*|\s+/); // Pisahkan dengan koma atau spasi
       const resultsTableBody = document.getElementById('results-table-body');
       const loading = document.getElementById('loading');
 
-      resultsTableBody.innerHTML = "";  // Clear previous results
-      loading.style.display = "block";   // Show loading
+      // Reset hasil pengecekan sebelum memulai
+      resetResults();
 
-      // Reset category arrays
-      approvedResults = [];
-      declinedResults = [];
-      unknownResults = [];
+      // Tampilkan loading
+      loading.style.display = "block";
 
       // Loop untuk pengecekan satu per satu
       for (let i = 0; i < ccList.length; i++) {
@@ -80,9 +95,6 @@
           await checkSingleCC(cc);  // Pengecekan satu per satu
         }
       }
-
-      // Menyembunyikan hasil pengecekan setelah selesai
-      resultsTableBody.style.display = "none";
 
       // Kosongkan input setelah pengecekan selesai
       document.getElementById('cc-input').value = '';
