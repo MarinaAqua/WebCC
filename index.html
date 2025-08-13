@@ -32,9 +32,9 @@
 
     <!-- Filter Buttons -->
     <div id="status-filter" class="mt-6 flex space-x-4">
-      <button onclick="filterStatus('Approved')" class="bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-500">Approved ✅</button>
-      <button onclick="filterStatus('Declined')" class="bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-500">Declined ❌</button>
-      <button onclick="filterStatus('Unknown')" class="bg-gray-600 text-white py-2 px-4 rounded-lg hover:bg-gray-500">Unknown ⚠️</button>
+      <button id="approved-button" onclick="filterStatus('Approved')" class="bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-500">Approved: 0 ✅</button>
+      <button id="declined-button" onclick="filterStatus('Declined')" class="bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-500">Declined: 0 ❌</button>
+      <button id="unknown-button" onclick="filterStatus('Unknown')" class="bg-gray-600 text-white py-2 px-4 rounded-lg hover:bg-gray-500">Unknown: 0 ⚠️</button>
     </div>
 
     <!-- Results Table -->
@@ -96,16 +96,32 @@
         const response = await fetch(url);
         const result = await response.json();
 
+        // Menyimpan hasil dalam kategori yang tepat dan mengupdate tombol filter
         if (result.status === "Approved") {
           approvedResults.push({ cc, response: result.response });
+          updateButtonCount('approved', approvedResults.length);
         } else if (result.status === "Declined") {
           declinedResults.push({ cc, response: result.response });
+          updateButtonCount('declined', declinedResults.length);
         } else {
           unknownResults.push({ cc, response: result.response });
+          updateButtonCount('unknown', unknownResults.length);
         }
       } catch (error) {
         // Tangani error jika terjadi masalah pada request
         unknownResults.push({ cc, response: "Request failed" });
+        updateButtonCount('unknown', unknownResults.length);
+      }
+    }
+
+    // Fungsi untuk mengupdate jumlah di tombol filter
+    function updateButtonCount(status, count) {
+      if (status === 'approved') {
+        document.getElementById('approved-button').innerText = `Approved: ${count} ✅`;
+      } else if (status === 'declined') {
+        document.getElementById('declined-button').innerText = `Declined: ${count} ❌`;
+      } else if (status === 'unknown') {
+        document.getElementById('unknown-button').innerText = `Unknown: ${count} ⚠️`;
       }
     }
 
