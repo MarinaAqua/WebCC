@@ -19,7 +19,7 @@
 
     <!-- Title -->
     <h1 class="text-4xl font-semibold mb-4">Cek Kartu Kredit</h1>
-    <p class="text-lg text-gray-400 mb-6">Masukkan nomor kartu kredit yang ingin diperiksa. Pisahkan dengan koma atau spasi.</p>
+    <p class="text-lg text-gray-400 mb-6">Masukkan nomor kartu kredit yang ingin diperiksa. Pisahkan dengan koma atau baris baru.</p>
 
     <!-- Input Area -->
     <textarea id="cc-input" rows="6" class="w-full max-w-lg p-4 bg-gray-800 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Masukkan nomor CC..."></textarea><br>
@@ -30,107 +30,125 @@
     <!-- Loading Indicator -->
     <div id="loading" class="text-indigo-400 mt-4 hidden">Memeriksa...</div>
 
-    <!-- Results Container -->
-    <div id="results" class="mt-6 w-full max-w-lg bg-gray-800 p-6 rounded-lg shadow-lg max-h-[400px] overflow-auto"></div>
-
     <!-- Filter Buttons -->
     <div id="status-filter" class="mt-6 flex space-x-4">
       <button onclick="filterStatus('Approved')" class="bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-500">Approved ✅</button>
       <button onclick="filterStatus('Declined')" class="bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-500">Declined ❌</button>
       <button onclick="filterStatus('Unknown')" class="bg-gray-600 text-white py-2 px-4 rounded-lg hover:bg-gray-500">Unknown ⚠️</button>
-      <button onclick="showAll()" class="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-500">Tampilkan Semua</button>
+    </div>
+
+    <!-- Results Table -->
+    <div id="results" class="mt-6 w-full max-w-lg bg-gray-800 p-6 rounded-lg shadow-lg max-h-[400px] overflow-auto">
+      <table id="results-table" class="min-w-full text-sm text-left text-gray-300">
+        <thead class="bg-gray-700">
+          <tr>
+            <th class="py-3 px-4">Nomor Kartu</th>
+            <th class="py-3 px-4">Status</th>
+            <th class="py-3 px-4">Respon</th>
+          </tr>
+        </thead>
+        <tbody id="results-table-body">
+          <!-- Results will be dynamically added here -->
+        </tbody>
+      </table>
     </div>
   </div>
 
   <script>
-    let allResults = [];
+    let approvedResults = [];
+    let declinedResults = [];
+    let unknownResults = [];
 
     async function checkCC() {
       const ccInput = document.getElementById('cc-input').value;
       const ccList = ccInput.split(/\s*,\s*|\s+/); // Pisahkan dengan koma atau spasi
-      const resultsContainer = document.getElementById('results');
+      const resultsTableBody = document.getElementById('results-table-body');
       const loading = document.getElementById('loading');
-      
-      resultsContainer.innerHTML = "";
-      allResults = [];  // Reset hasil sebelumnya
 
-      // Tampilkan loading indicator
-      loading.style.display = "block";
-      const startTime = Date.now();
+      resultsTableBody.innerHTML = "";  // Clear previous results
+      loading.style.display = "block";   // Show loading
 
-      // Loop untuk memeriksa setiap CC satu per satu
+      // Reset category arrays
+      approvedResults = [];
+      declinedResults = [];
+      unknownResults = [];
+
+      // Loop untuk pengecekan satu per satu
       for (let i = 0; i < ccList.length; i++) {
-        const cc = ccList[i];
-        const ccFormatted = encodeURIComponent(cc); // Format CC untuk URL
-        const url = `https://api-cc-new.marinaaqua366.workers.dev/${ccFormatted}`; // Gantilah URL ini sesuai API kamu
-
-        // Proses pengecekan setiap CC
-        const result = await fetch(url)
-          .then(response => response.json())
-          .then(data => ({
-            cc: cc,
-            response: data.response,
-            status: data.status,
-            card: data.card
-          }))
-          .catch(error => ({
-            cc: cc,
-            response: "Error connecting to API",
-            status: "Unknown",
-            card: "Error ❌"
-          }));
-
-        // Menambahkan hasil ke array
-        allResults.push(result);
-
-        // Menambahkan hasil ke UI
-        addResultToUI(result);
-
-        // Menunggu sedikit sebelum lanjut untuk memberi efek animasi "satu per satu"
-        await new Promise(resolve => setTimeout(resolve, 500)); // 500ms delay per CC
+        const cc = ccList[i].trim();
+        if (cc) {
+          await checkSingleCC(cc);  // Pengecekan satu per satu
+        }
       }
 
-      const endTime = Date.now();
-      const elapsedTime = (endTime - startTime) / 1000; // Waktu dalam detik
-      resultsContainer.innerHTML += `<p class="text-lg mt-4">Waktu Pengecekan: ${elapsedTime} detik</p>`;
-      loading.style.display = "none"; // Sembunyikan loading setelah pengecekan selesai
+      // Menampilkan hasil default (semua status)
+      showAll();
+
+      // Kosongkan input setelah pengecekan selesai
+      document.getElementById('cc-input').value = '';
+      loading.style.display = "none";  // Sembunyikan loading
     }
 
-    // Fungsi untuk menambahkan hasil pengecekan ke UI
-    function addResultToUI(result) {
-      const resultsContainer = document.getElementById('results');
-      const resultItem = document.createElement('div');
-      resultItem.className = `result-item p-4 mb-4 rounded-lg ${getStatusColor(result.status)}`;
-      resultItem.innerHTML = `<strong>${result.cc}</strong>: ${result.response} - ${result.card}`;
-      resultsContainer.appendChild(resultItem);
+    async function checkSingleCC(cc) {
+      const url = `https://api-cc-new.marinaaqua366.workers.dev/${cc}`;  // API yang kamu sebutkan
+
+      try {
+        const response = await fetch(url);
+        const result = await response.json();
+
+        if (result.status === "Approved") {
+          approvedResults.push({ cc, response: result.response });
+        } else if (result.status === "Declined") {
+          declinedResults.push({ cc, response: result.response });
+        } else {
+          unknownResults.push({ cc, response: result.response });
+        }
+      } catch (error) {
+        // Tangani error jika terjadi masalah pada request
+        unknownResults.push({ cc, response: "Request failed" });
+      }
     }
 
-    // Mengambil warna berdasarkan status
-    function getStatusColor(status) {
-      if (status === "Approved") return "bg-green-600 text-white";
-      if (status === "Declined") return "bg-red-600 text-white";
-      return "bg-gray-600 text-white";
+    // Menampilkan semua hasil
+    function showAll() {
+      const resultsTableBody = document.getElementById('results-table-body');
+      resultsTableBody.innerHTML = "";  // Clear previous results
+
+      appendResultsToTable(approvedResults, 'Approved ✅', 'bg-green-600');
+      appendResultsToTable(declinedResults, 'Declined ❌', 'bg-red-600');
+      appendResultsToTable(unknownResults, 'Unknown ⚠️', 'bg-gray-600');
+    }
+
+    // Menambahkan hasil ke tabel
+    function appendResultsToTable(results, statusLabel, statusColor) {
+      const resultsTableBody = document.getElementById('results-table-body');
+      let count = 1;
+      results.forEach(result => {
+        const row = document.createElement('tr');
+        row.className = `border-b border-gray-600 ${statusColor}`;
+        
+        row.innerHTML = `
+          <td class="py-3 px-4">${result.cc}</td>
+          <td class="py-3 px-4">${statusLabel} ${count++}</td>
+          <td class="py-3 px-4">${result.response}</td>
+        `;
+        
+        resultsTableBody.appendChild(row);
+      });
     }
 
     // Filter berdasarkan status
     function filterStatus(status) {
-      const filteredResults = allResults.filter(result => result.status === status); // Filter menggunakan status string
-      displayFilteredResults(filteredResults);
-    }
+      const resultsTableBody = document.getElementById('results-table-body');
+      resultsTableBody.innerHTML = "";  // Clear previous results
 
-    // Tampilkan semua hasil
-    function showAll() {
-      displayFilteredResults(allResults);
-    }
-
-    // Fungsi untuk menampilkan hasil yang sudah difilter
-    function displayFilteredResults(results) {
-      const resultsContainer = document.getElementById('results');
-      resultsContainer.innerHTML = ""; // Clear previous results
-
-      results.forEach(result => {
-        addResultToUI(result);
-      });
+      if (status === 'Approved') {
+        appendResultsToTable(approvedResults, 'Approved ✅', 'bg-green-600');
+      } else if (status === 'Declined') {
+        appendResultsToTable(declinedResults, 'Declined ❌', 'bg-red-600');
+      } else if (status === 'Unknown') {
+        appendResultsToTable(unknownResults, 'Unknown ⚠️', 'bg-gray-600');
+      }
     }
   </script>
 </body>
