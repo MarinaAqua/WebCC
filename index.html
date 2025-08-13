@@ -96,11 +96,11 @@
         const response = await fetch(url);
         const result = await response.json();
 
-        // Menyimpan hasil dalam kategori yang tepat dan mengupdate tombol filter
-        if (result.status === "Approved") {
+        // Memeriksa nilai status dan respon sesuai dengan JSON yang diberikan
+        if (result.status === "Approved ✅") {
           approvedResults.push({ cc, response: result.response });
           updateButtonCount('approved', approvedResults.length);
-        } else if (result.status === "Declined") {
+        } else if (result.status === "Your Card Was Declined ❌") {
           declinedResults.push({ cc, response: result.response });
           updateButtonCount('declined', declinedResults.length);
         } else {
