@@ -37,6 +37,9 @@
       <button id="unknown-button" onclick="filterStatus('Unknown')" class="bg-gray-600 text-white py-2 px-4 rounded-lg hover:bg-gray-500">Unknown: 0 ⚠️</button>
     </div>
 
+    <!-- Copy Button for Approved CCs -->
+    <button id="copy-approved-button" onclick="copyApprovedCCs()" class="mt-4 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 hidden">Copy All Approved CCs</button>
+
     <!-- Results Area -->
     <div id="results" class="mt-6 w-full max-w-lg bg-gray-800 p-6 rounded-lg shadow-lg max-h-[400px] overflow-auto hidden">
       <!-- Hasil akan ditampilkan di sini -->
@@ -66,6 +69,7 @@
       const resultsContainer = document.getElementById('results-container');
       resultsContainer.innerHTML = "";
       document.getElementById('results').style.display = "none";  // Sembunyikan hasil
+      document.getElementById('copy-approved-button').style.display = "none"; // Sembunyikan tombol copy
     }
 
     async function checkCC() {
@@ -93,7 +97,7 @@
     }
 
     async function checkSingleCC(cc) {
-      const url = `https://api-cc-new.marinaaqua366.workers.dev/${cc}`;  // API yang kamu sebutkan
+      const url = `https://api-cc.xcs.biz.id/${cc}`;  // API yang kamu sebutkan
 
       try {
         const response = await fetch(url);
@@ -121,6 +125,7 @@
     function updateButtonCount(status, count) {
       if (status === 'approved') {
         document.getElementById('approved-button').innerText = `Approved: ${count} ✅`;
+        document.getElementById('copy-approved-button').style.display = count > 0 ? "inline-block" : "none"; // Menampilkan tombol copy jika ada CC yang approved
       } else if (status === 'declined') {
         document.getElementById('declined-button').innerText = `Declined: ${count} ❌`;
       } else if (status === 'unknown') {
@@ -166,6 +171,20 @@
     // Filter berdasarkan status
     function filterStatus(status) {
       showFilteredResults(status);
+    }
+
+    // Fungsi untuk menyalin semua CC yang sudah approved
+    function copyApprovedCCs() {
+      if (approvedResults.length > 0) {
+        const approvedCCs = approvedResults.map(result => result.cc).join("\n");
+        navigator.clipboard.writeText(approvedCCs).then(() => {
+          alert("Semua CC yang Approved telah disalin ke clipboard.");
+        }).catch(err => {
+          alert("Gagal menyalin ke clipboard.");
+        });
+      } else {
+        alert("Tidak ada CC yang Approved.");
+      }
     }
   </script>
 </body>
