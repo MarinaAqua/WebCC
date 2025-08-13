@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cek Kartu Kredit</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* Tailwind Default Dark Mode */
+    html {
+      background-color: #121212;
+    }
+  </style>
+</head>
+<body class="bg-gray-900 text-white dark:bg-gray-900 dark:text-white">
+
+  <!-- Main Container -->
+  <div class="min-h-screen flex flex-col items-center justify-center p-6">
+
+    <!-- Title -->
+    <h1 class="text-4xl font-semibold mb-4">Cek Kartu Kredit</h1>
+    <p class="text-lg text-gray-400 mb-6">Masukkan nomor kartu kredit yang ingin diperiksa. Pisahkan dengan koma atau spasi.</p>
+
+    <!-- Input Area -->
+    <textarea id="cc-input" rows="6" class="w-full max-w-lg p-4 bg-gray-800 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Masukkan nomor CC..."></textarea><br>
+
+    <!-- Check Button -->
+    <button onclick="checkCC()" class="mt-4 bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500">Periksa</button>
+
+    <!-- Loading Indicator -->
+    <div id="loading" class="text-indigo-400 mt-4 hidden">Memeriksa...</div>
+
+    <!-- Results Container -->
+    <div id="results" class="mt-6 w-full max-w-lg bg-gray-800 p-6 rounded-lg shadow-lg max-h-[400px] overflow-auto"></div>
+
+    <!-- Filter Buttons -->
+    <div id="status-filter" class="mt-6 flex space-x-4">
+      <button onclick="filterStatus('Approved')" class="bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-500">Approved ✅</button>
+      <button onclick="filterStatus('Declined')" class="bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-500">Declined ❌</button>
+      <button onclick="filterStatus('Unknown')" class="bg-gray-600 text-white py-2 px-4 rounded-lg hover:bg-gray-500">Unknown ⚠️</button>
+      <button onclick="showAll()" class="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-500">Tampilkan Semua</button>
+    </div>
+  </div>
+
+  <script>
+    let allResults = [];
+
+    async function checkCC() {
+      const ccInput = document.getElementById('cc-input').value;
+      const ccList = ccInput.split(/\s*,\s*|\s+/); // Pisahkan dengan koma atau spasi
+      const resultsContainer = document.getElementById('results');
+      const loading = document.getElementById('loading');
+      
+      resultsContainer.innerHTML = "";
+      allResults = [];  // Reset hasil sebelumnya
+
+      // Tampilkan loading indicator
+      loading.style.display = "block";
+      const startTime = Date.now();
+
+      // Loop untuk memeriksa setiap CC satu per satu
+      for (let i = 0; i < ccList.length; i++) {
+        const cc = ccList[i];
+        const ccFormatted = encodeURIComponent(cc); // Format CC untuk URL
+        const url = `https://api-cc-new.marinaaqua366.workers.dev/${ccFormatted}`; // Gantilah URL ini sesuai API kamu
+
+        // Proses pengecekan setiap CC
+        const result = await fetch(url)
+          .then(response => response.json())
+          .then(data => ({
+            cc: cc,
+            response: data.response,
+            status: data.status,
+            card: data.card
+          }))
+          .catch(error => ({
+            cc: cc,
+            response: "Error connecting to API",
+            status: "Unknown",
+            card: "Error ❌"
+          }));
+
+        // Menambahkan hasil ke array
+        allResults.push(result);
+
+        // Menambahkan hasil ke UI
+        addResultToUI(result);
+
+        // Menunggu sedikit sebelum lanjut untuk memberi efek animasi "satu per satu"
+        await new Promise(resolve => setTimeout(resolve, 500)); // 500ms delay per CC
+      }
+
+      const endTime = Date.now();
+      const elapsedTime = (endTime - startTime) / 1000; // Waktu dalam detik
+      resultsContainer.innerHTML += `<p class="text-lg mt-4">Waktu Pengecekan: ${elapsedTime} detik</p>`;
+      loading.style.display = "none"; // Sembunyikan loading setelah pengecekan selesai
+    }
+
+    // Fungsi untuk menambahkan hasil pengecekan ke UI
+    function addResultToUI(result) {
+      const resultsContainer = document.getElementById('results');
+      const resultItem = document.createElement('div');
+      resultItem.className = `result-item p-4 mb-4 rounded-lg ${getStatusColor(result.status)}`;
+      resultItem.innerHTML = `<strong>${result.cc}</strong>: ${result.response} - ${result.card}`;
+      resultsContainer.appendChild(resultItem);
+    }
+
+    // Mengambil warna berdasarkan status
+    function getStatusColor(status) {
+      if (status === "Approved") return "bg-green-600 text-white";
+      if (status === "Declined") return "bg-red-600 text-white";
+      return "bg-gray-600 text-white";
+    }
+
+    // Filter berdasarkan status
+    function filterStatus(status) {
+      const filteredResults = allResults.filter(result => result.status === status); // Filter menggunakan status string
+      displayFilteredResults(filteredResults);
+    }
+
+    // Tampilkan semua hasil
+    function showAll() {
+      displayFilteredResults(allResults);
+    }
+
+    // Fungsi untuk menampilkan hasil yang sudah difilter
+    function displayFilteredResults(results) {
+      const resultsContainer = document.getElementById('results');
+      resultsContainer.innerHTML = ""; // Clear previous results
+
+      results.forEach(result => {
+        addResultToUI(result);
+      });
+    }
+  </script>
+</body>
+</html>
