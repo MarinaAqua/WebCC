@@ -42,7 +42,7 @@
       <table id="results-table" class="min-w-full text-sm text-left text-gray-300">
         <thead class="bg-gray-700">
           <tr>
-            <th class="py-3 px-4">Nomor Kartu</th>
+            <th class="py-3 px-4">CC</th>
             <th class="py-3 px-4">Status</th>
             <th class="py-3 px-4">Respon</th>
           </tr>
@@ -163,9 +163,11 @@
         row.className = `border-b border-gray-600 ${statusColor}`;
         
         row.innerHTML = `
-          <td class="py-3 px-4">${result.cc}</td>
-          <td class="py-3 px-4">${statusLabel} ${count++}</td>
-          <td class="py-3 px-4">${result.response}</td>
+          <td class="py-3 px-4">
+            CC: ${result.cc} <br>
+            Status: ${statusLabel} <br>
+            Respon: ${result.response}
+          </td>
         `;
         
         resultsTableBody.appendChild(row);
