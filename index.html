@@ -54,6 +54,8 @@
     let declinedResults = [];
     let unknownResults = [];
 
+    const watermark = "Group: @club_gratis";  // Watermark yang ingin ditambahkan
+
     // Reset semua status dan hasil pengecekan
     function resetResults() {
       approvedResults = [];
@@ -162,6 +164,7 @@
           <p>CC: ${result.cc}</p>
           <p>Status: ${statusLabel}</p>
           <p>Respon: ${result.response}</p>
+          <p>Group: @club_gratis</p> <!-- Watermark ditambahkan -->
         `;
         
         resultsContainer.appendChild(resultDiv);
@@ -176,7 +179,7 @@
     // Fungsi untuk menyalin semua CC yang sudah approved
     function copyApprovedCCs() {
       if (approvedResults.length > 0) {
-        const approvedCCs = approvedResults.map(result => result.cc).join("\n");
+        const approvedCCs = approvedResults.map(result => `${result.cc} | Status: Approved ✅ | Respon: ${result.response} | Group: @club_gratis`).join("\n");
         navigator.clipboard.writeText(approvedCCs).then(() => {
           alert("Semua CC yang Approved telah disalin ke clipboard.");
         }).catch(err => {
