@@ -37,20 +37,12 @@
       <button id="unknown-button" onclick="filterStatus('Unknown')" class="bg-gray-600 text-white py-2 px-4 rounded-lg hover:bg-gray-500">Unknown: 0 ⚠️</button>
     </div>
 
-    <!-- Results Table -->
-    <div id="results" class="mt-6 w-full max-w-lg bg-gray-800 p-6 rounded-lg shadow-lg max-h-[400px] overflow-auto">
-      <table id="results-table" class="min-w-full text-sm text-left text-gray-300">
-        <thead class="bg-gray-700">
-          <tr>
-            <th class="py-3 px-4">CC</th>
-            <th class="py-3 px-4">Status</th>
-            <th class="py-3 px-4">Respon</th>
-          </tr>
-        </thead>
-        <tbody id="results-table-body">
-          <!-- Results will be dynamically added here -->
-        </tbody>
-      </table>
+    <!-- Results Area -->
+    <div id="results" class="mt-6 w-full max-w-lg bg-gray-800 p-6 rounded-lg shadow-lg max-h-[400px] overflow-auto hidden">
+      <!-- Hasil akan ditampilkan di sini -->
+      <div id="results-container" class="space-y-4">
+        <!-- Each result will be added here dynamically -->
+      </div>
     </div>
   </div>
 
@@ -70,16 +62,15 @@
       document.getElementById('declined-button').innerText = `Declined: 0 ❌`;
       document.getElementById('unknown-button').innerText = `Unknown: 0 ⚠️`;
 
-      // Clear table body
-      const resultsTableBody = document.getElementById('results-table-body');
-      resultsTableBody.innerHTML = "";
-      resultsTableBody.style.display = "none";  // Sembunyikan tabel hasil
+      // Clear hasil yang sudah ada
+      const resultsContainer = document.getElementById('results-container');
+      resultsContainer.innerHTML = "";
+      document.getElementById('results').style.display = "none";  // Sembunyikan hasil
     }
 
     async function checkCC() {
       const ccInput = document.getElementById('cc-input').value;
       const ccList = ccInput.split(/\s*,\s*|\s+/); // Pisahkan dengan koma atau spasi
-      const resultsTableBody = document.getElementById('results-table-body');
       const loading = document.getElementById('loading');
 
       // Reset hasil pengecekan sebelum memulai
@@ -139,38 +130,36 @@
 
     // Menampilkan hasil sesuai tombol yang dipilih
     function showFilteredResults(status) {
-      const resultsTableBody = document.getElementById('results-table-body');
-      resultsTableBody.innerHTML = "";  // Clear previous results
+      const resultsContainer = document.getElementById('results-container');
+      resultsContainer.innerHTML = "";  // Clear previous results
 
       if (status === 'Approved') {
-        appendResultsToTable(approvedResults, 'Approved ✅', 'bg-green-600');
+        appendResultsToContainer(approvedResults, 'Approved ✅');
       } else if (status === 'Declined') {
-        appendResultsToTable(declinedResults, 'Declined ❌', 'bg-red-600');
+        appendResultsToContainer(declinedResults, 'Declined ❌');
       } else if (status === 'Unknown') {
-        appendResultsToTable(unknownResults, 'Unknown ⚠️', 'bg-gray-600');
+        appendResultsToContainer(unknownResults, 'Unknown ⚠️');
       }
 
       // Menampilkan hasil pengecekan setelah filter
-      resultsTableBody.style.display = "block";
+      document.getElementById('results').style.display = "block";
     }
 
-    // Menambahkan hasil ke tabel
-    function appendResultsToTable(results, statusLabel, statusColor) {
-      const resultsTableBody = document.getElementById('results-table-body');
+    // Menambahkan hasil ke container
+    function appendResultsToContainer(results, statusLabel) {
+      const resultsContainer = document.getElementById('results-container');
       let count = 1;
       results.forEach(result => {
-        const row = document.createElement('tr');
-        row.className = `border-b border-gray-600 ${statusColor}`;
+        const resultDiv = document.createElement('div');
+        resultDiv.className = "bg-gray-700 p-4 rounded-lg space-y-2";
         
-        row.innerHTML = `
-          <td class="py-3 px-4">
-            CC: ${result.cc} <br>
-            Status: ${statusLabel} <br>
-            Respon: ${result.response}
-          </td>
+        resultDiv.innerHTML = `
+          <p>CC: ${result.cc}</p>
+          <p>Status: ${statusLabel}</p>
+          <p>Respon: ${result.response}</p>
         `;
         
-        resultsTableBody.appendChild(row);
+        resultsContainer.appendChild(resultDiv);
       });
     }
 
