@@ -81,8 +81,8 @@
         }
       }
 
-      // Menampilkan hasil default (semua status)
-      showAll();
+      // Menyembunyikan hasil pengecekan setelah selesai
+      resultsTableBody.style.display = "none";
 
       // Kosongkan input setelah pengecekan selesai
       document.getElementById('cc-input').value = '';
@@ -125,14 +125,21 @@
       }
     }
 
-    // Menampilkan semua hasil
-    function showAll() {
+    // Menampilkan hasil sesuai tombol yang dipilih
+    function showFilteredResults(status) {
       const resultsTableBody = document.getElementById('results-table-body');
       resultsTableBody.innerHTML = "";  // Clear previous results
 
-      appendResultsToTable(approvedResults, 'Approved ✅', 'bg-green-600');
-      appendResultsToTable(declinedResults, 'Declined ❌', 'bg-red-600');
-      appendResultsToTable(unknownResults, 'Unknown ⚠️', 'bg-gray-600');
+      if (status === 'Approved') {
+        appendResultsToTable(approvedResults, 'Approved ✅', 'bg-green-600');
+      } else if (status === 'Declined') {
+        appendResultsToTable(declinedResults, 'Declined ❌', 'bg-red-600');
+      } else if (status === 'Unknown') {
+        appendResultsToTable(unknownResults, 'Unknown ⚠️', 'bg-gray-600');
+      }
+
+      // Menampilkan hasil pengecekan setelah filter
+      resultsTableBody.style.display = "block";
     }
 
     // Menambahkan hasil ke tabel
@@ -155,16 +162,7 @@
 
     // Filter berdasarkan status
     function filterStatus(status) {
-      const resultsTableBody = document.getElementById('results-table-body');
-      resultsTableBody.innerHTML = "";  // Clear previous results
-
-      if (status === 'Approved') {
-        appendResultsToTable(approvedResults, 'Approved ✅', 'bg-green-600');
-      } else if (status === 'Declined') {
-        appendResultsToTable(declinedResults, 'Declined ❌', 'bg-red-600');
-      } else if (status === 'Unknown') {
-        appendResultsToTable(unknownResults, 'Unknown ⚠️', 'bg-gray-600');
-      }
+      showFilteredResults(status);
     }
   </script>
 </body>
