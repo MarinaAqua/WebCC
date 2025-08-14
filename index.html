@@ -38,15 +38,26 @@
       height: auto;
     }
 
-    /* Button Positioning */
+    /* Button Positioning and Size */
     .button-container {
       display: flex;
       justify-content: space-between;
       width: 100%;
+      max-width: 500px;
+      margin-top: 20px;
     }
 
     .button-container button {
       flex: 1;
+      max-width: 120px; /* Membatasi lebar tombol */
+      font-size: 0.875rem; /* Ukuran font lebih kecil */
+      padding: 8px 16px; /* Padding lebih kecil */
+      margin: 0 5px; /* Jarak antar tombol */
+    }
+
+    /* Button Hover Effects */
+    .button-container button:hover {
+      opacity: 0.9;
     }
   </style>
 </head>
@@ -62,12 +73,12 @@
     <!-- Button Donate and Link (aligned left and right) -->
     <div class="button-container mb-4">
       <!-- Donate Button -->
-      <button id="donate-button" onclick="openDonatePopup()" class="bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+      <button id="donate-button" onclick="openDonatePopup()" class="bg-indigo-600 text-white rounded-lg hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500">
         Donate
       </button>
 
       <!-- Link Button -->
-      <button id="link-button" onclick="openLink()" class="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500">
+      <button id="link-button" onclick="openLink()" class="bg-blue-600 text-white rounded-lg hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500">
         Link
       </button>
     </div>
